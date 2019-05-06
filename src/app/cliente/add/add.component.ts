@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
   templateUrl: './add.component.html',
   styleUrls: ['./add.component.css']
 })
-export class AddComponent implements OnInit {
+export class AddClienteComponent implements OnInit {
 
   private cliente: Cliente;
   private clientes$: Observable<Cliente[]>;
@@ -18,40 +18,62 @@ export class AddComponent implements OnInit {
 
   ngOnInit() {
     this.cliente = new Cliente;
-    this.clientes$ = this.clienteService.getClientes();
+    this.atualizaLista();
   }
-  
 
   onSubmit(form) {
     if (this.cliente.pws == form.value.conf) {
       if (form.valid) {
         this.clienteService.addCliente(this.cliente)
-        .subscribe(
-          res=>{
-            alert("cadastrado");
-        this.cliente = new Cliente;
-        form.reset();
-          },
-          err=>{
-            alert("erro ao cadastrar!");
-            console.log(err);
-          }
-        );
-        
+          .subscribe(
+            res => {
+              alert("cadastrado");
+              console.log(res);
+              this.cliente = new Cliente;
+              form.reset();
+              this.atualizaLista();
+            },
+            err => {
+              alert("Erro ao cadastrar!");
+              console.log(err);
+            }
+          );
       }
     }
-    this.clientes$ = this.clienteService.getClientes();
+
   }
 
-  edit(id:number, cliente:Cliente){
-    console.log(id, cliente);
+  edit(id: number) {
     this.cliente = new Cliente;
     // this.cliente = cliente;
-    this.cliente = this.clienteService.getcliente(id);
+    this.clienteService.getcliente(id)
+      .subscribe(
+        res => {
+          this.cliente = res
+        },
+        err => {
+          console.log(err);
+        }
+      );
   }
 
-  remover(id:number){
-    this.clienteService.deleteCliente(id);
+  remover(id: number) {
+    if (confirm("Remover o registro?")) {
+      this.clienteService.deleteCliente(id)
+        .subscribe(
+          res => {
+            alert("Removido!");
+            this.atualizaLista();
+          },
+          err => {
+            alert("Erro ao remover: " + err)
+          }
+        );
+    }
   }
 
+  atualizaLista() {
+    this.clientes$ = this.clienteService.getClientes();
+  }
+  
 }
