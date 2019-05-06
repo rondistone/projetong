@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Cliente } from '../cliente';
+import { ClienteService } from '../cliente.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-add',
@@ -9,15 +11,47 @@ import { Cliente } from '../cliente';
 export class AddComponent implements OnInit {
 
   private cliente: Cliente;
+  private clientes$: Observable<Cliente[]>;
 
-  constructor() { }
+  constructor(private clienteService: ClienteService) {
+  }
 
   ngOnInit() {
     this.cliente = new Cliente;
+    this.clientes$ = this.clienteService.getClientes();
+  }
+  
+
+  onSubmit(form) {
+    if (this.cliente.pws == form.value.conf) {
+      if (form.valid) {
+        this.clienteService.addCliente(this.cliente)
+        .subscribe(
+          res=>{
+            alert("cadastrado");
+        this.cliente = new Cliente;
+        form.reset();
+          },
+          err=>{
+            alert("erro ao cadastrar!");
+            console.log(err);
+          }
+        );
+        
+      }
+    }
+    this.clientes$ = this.clienteService.getClientes();
   }
 
-   onSubmit(form){
-    console.log(form);
-  
+  edit(id:number, cliente:Cliente){
+    console.log(id, cliente);
+    this.cliente = new Cliente;
+    // this.cliente = cliente;
+    this.cliente = this.clienteService.getcliente(id);
   }
+
+  remover(id:number){
+    this.clienteService.deleteCliente(id);
+  }
+
 }
